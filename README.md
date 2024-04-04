@@ -1,14 +1,14 @@
 # Go Rest Template
 
-![Github Actions](https://github.com/kelvinator07/go-rest-template/actions/workflows/ci.yml/badge.svg)
+![Github Actions](https://github.com/kelvinator07/go-rest-template/actions/workflows/workflow.yaml/badge.svg)
 
 
-# Gin
-# JWT
-# Redis for caching 
-# Postgres / Mongodb
+### Gin
+### JWT
+### Redis for caching 
+### Postgres / Mongodb
 
-# API Structure
+## API Structure
 Main Server => Route => Handler => UseCase/Controller => Repository => Database
 
 Route => routes/endpoints
