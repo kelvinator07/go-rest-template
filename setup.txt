@@ -1,0 +1,47 @@
+API Structure
+Main Server => Route => Handler => UseCase/Controller => Repository => Database
+
+Route => routes/endpoints
+Handler => payload validation, redis, caching
+UseCase/Controller => status code  call repositories
+
+
+Add database schema
+- migrations
+- create and drop table 
+- run make mig-up and mig-down
+
+Add seed for domain
+- New file seeders.domain_name.go
+- seed/seeders/seeder.go
+- seed/main.go 
+- run make seed
+
+Add Domain / UseCase - interfaces for Repository and Controller
+- internal/business/domains/v1 add domain.name.go
+- internal/business/usecases/v1 add usecase.name.go 
+
+Add Datasources 
+- internal/datasources/records add record.name.go
+- internal/datasources/records add record.name_mapper_v1.go
+
+Add Repository
+- repositories/postgre.name.go
+
+Add DTO
+- http/datatransfers/requests/requests.name.go
+- http/datatransfers/responses/responses.name.go
+
+Add Handler
+- http/handler.name.go 
+
+Add Route
+- http/routes/route.name.go
+
+API Server
+- Go to NewApp() , then add - routes.NewDomainNameRoute(api, conn).Routes()
+
+
+Github Workflow
+Add .env secrets to Repository
+
