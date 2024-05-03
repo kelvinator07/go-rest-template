@@ -41,7 +41,11 @@ func NewApp() (*App, error) {
 	jwtService := jwt.NewJWTService(config.AppConfig.JWTSecret, config.AppConfig.JWTIssuer, config.AppConfig.JWTExpired)
 
 	// cache
-	redisCache := caches.NewRedisCache(config.AppConfig.REDISHost, 0, config.AppConfig.REDISPassword, time.Duration(config.AppConfig.REDISExpired))
+	redisCache, err := caches.NewRedisCache(config.AppConfig.REDISHost, 0, config.AppConfig.REDISPassword, time.Duration(config.AppConfig.REDISExpired))
+	if err != nil {
+		panic(err)
+	}
+
 	ristrettoCache, err := caches.NewRistrettoCache()
 	if err != nil {
 		panic(err)

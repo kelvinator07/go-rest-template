@@ -1,6 +1,7 @@
 package caches
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -21,18 +22,27 @@ type redisCache struct {
 	client   *redis.Client
 }
 
-func NewRedisCache(host string, db int, password string, expires time.Duration) RedisCache {
-	return &redisCache{
+func NewRedisCache(host string, db int, password string, expires time.Duration) (RedisCache, error) {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     host,
+		Password: password,
+		DB:       db,
+	})
+
+	_, err := redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	redisCache := &redisCache{
 		host:     host,
 		db:       db,
 		password: password,
 		expires:  expires,
-		client: redis.NewClient(&redis.Options{
-			Addr:     host,
-			Password: password,
-			DB:       db,
-		}),
+		client:   redisClient,
 	}
+
+	return redisCache, nil
 }
 
 func (cache *redisCache) Set(key string, value interface{}) error {
