@@ -17,7 +17,7 @@ func (user UserRequest) ToV1Domain() *V1Domains.UserDomain {
 		Username: user.Username,
 		Email:    user.Email,
 		Password: user.Password,
-		RoleID:   2, // everyone who regis it's supposed to be users
+		RoleID:   2, // normal user
 	}
 }
 
@@ -27,7 +27,7 @@ type UserSendOTPRequest struct {
 }
 
 // Verify OTP Code
-type UserVerifOTPRequest struct {
+type UserVerifyOTPRequest struct {
 	Email string `json:"email" validate:"required,email"`
 	Code  string `json:"code" validate:"required,numeric"`
 }

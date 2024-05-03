@@ -47,3 +47,12 @@ func (r *postgreUserRepository) ChangeActiveUser(ctx context.Context, inDom *V1D
 
 	return
 }
+
+func (r *postgreUserRepository) GetAllUsers(ctx context.Context) (outDomain []V1Domains.UserDomain, err error) {
+	var usersRecord []records.Users
+
+	if err := r.conn.SelectContext(ctx, &usersRecord, `SELECT id, username, email, active, role_id, created_at, updated_at FROM users`); err != nil {
+		return nil, err
+	}
+	return records.ToArrayOfUsersV1Domain(&usersRecord), nil
+}

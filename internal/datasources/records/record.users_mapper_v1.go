@@ -9,7 +9,6 @@ func (u *Users) ToV1Domain() V1Domains.UserDomain {
 		ID:        u.Id,
 		Username:  u.Username,
 		Email:     u.Email,
-		Password:  u.Password,
 		Active:    u.Active,
 		RoleID:    u.RoleId,
 		CreatedAt: u.CreatedAt,

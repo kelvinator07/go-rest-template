@@ -214,7 +214,7 @@ func TestVerifOTP(t *testing.T) {
 	t.Run("Test 1 | Success Verify OTP", func(t *testing.T) {
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(userDataFromDB, nil).Once()
 
-		statusCode, err := userUsecase.VerifOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
+		statusCode, err := userUsecase.VerifyOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
 
 		assert.Nil(t, err)
 		assert.Equal(t, http.StatusOK, statusCode)
@@ -222,7 +222,7 @@ func TestVerifOTP(t *testing.T) {
 	t.Run("Test 2 | Email Not Registered", func(t *testing.T) {
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(V1Domains.UserDomain{}, constants.ErrUserNotFound).Once()
 
-		statusCode, err := userUsecase.VerifOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
+		statusCode, err := userUsecase.VerifyOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
 
 		assert.NotNil(t, err)
 		assert.Equal(t, http.StatusNotFound, statusCode)
@@ -230,7 +230,7 @@ func TestVerifOTP(t *testing.T) {
 	t.Run("Test 3 | Account Already Activated", func(t *testing.T) {
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(usersDataFromDB[0], nil).Once()
 
-		statusCode, err := userUsecase.VerifOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
+		statusCode, err := userUsecase.VerifyOTP(context.Background(), "najibfikri13@gmail.com", "112233", "112233")
 
 		assert.NotNil(t, err)
 		assert.Equal(t, http.StatusBadRequest, statusCode)
@@ -238,7 +238,7 @@ func TestVerifOTP(t *testing.T) {
 	t.Run("Test 4 | Invalid OTP Code", func(t *testing.T) {
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(userDataFromDB, nil).Once()
 
-		statusCode, err := userUsecase.VerifOTP(context.Background(), "najibfikri13@gmail.com", "999999", "112233")
+		statusCode, err := userUsecase.VerifyOTP(context.Background(), "najibfikri13@gmail.com", "999999", "112233")
 
 		assert.NotNil(t, err)
 		assert.Equal(t, http.StatusBadRequest, statusCode)

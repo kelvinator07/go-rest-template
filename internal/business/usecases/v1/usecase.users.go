@@ -86,7 +86,7 @@ func (userUC *userUsecase) SendOTP(ctx context.Context, email string) (otpCode s
 	if err != nil {
 		return "", http.StatusInternalServerError, err
 	}
-
+	// TODO: Use a Go routine
 	if err = userUC.mailer.SendOTP(code, email); err != nil {
 		return "", http.StatusInternalServerError, err
 	}
@@ -94,7 +94,7 @@ func (userUC *userUsecase) SendOTP(ctx context.Context, email string) (otpCode s
 	return code, http.StatusOK, nil
 }
 
-func (userUC *userUsecase) VerifOTP(ctx context.Context, email string, userOTP string, otpRedis string) (statusCode int, err error) {
+func (userUC *userUsecase) VerifyOTP(ctx context.Context, email string, userOTP string, otpRedis string) (statusCode int, err error) {
 	domain, err := userUC.repo.GetByEmail(ctx, &V1Domains.UserDomain{Email: email})
 	if err != nil {
 		return http.StatusNotFound, errors.New("email not found")
@@ -131,4 +131,13 @@ func (uc *userUsecase) GetByEmail(ctx context.Context, email string) (outDom V1D
 	}
 
 	return user, http.StatusOK, nil
+}
+
+func (uc *userUsecase) GetAllUsers(ctx context.Context) (outDoms []V1Domains.UserDomain, statusCode int, err error) {
+	outDoms, err = uc.repo.GetAllUsers(ctx)
+	if err != nil {
+		return []V1Domains.UserDomain{}, http.StatusInternalServerError, err
+	}
+
+	return outDoms, http.StatusOK, nil
 }

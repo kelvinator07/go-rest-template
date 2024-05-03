@@ -100,11 +100,11 @@ func lazyAuth(ctx *gin.Context) {
 	ctx.Set(constants.CtxAuthenticatedUserKey, jwtClaims)
 }
 
-func TestRegis(t *testing.T) {
+func TestRegister(t *testing.T) {
 	setup(t)
 	// Define route
-	s.POST(constants.EndpointV1+"/auth/regis", userHandler.Regis)
-	t.Run("When Success Regis", func(t *testing.T) {
+	s.POST(constants.EndpointV1+"/auth/register", userHandler.Register)
+	t.Run("When Success Registration", func(t *testing.T) {
 		req := requests.UserRequest{
 			Username: "itsmepatrick",
 			Email:    "najibfikri13@gmail.com",
@@ -114,9 +114,10 @@ func TestRegis(t *testing.T) {
 
 		userRepoMock.Mock.On("Store", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(nil).Once()
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(userDataFromDB, nil).Once()
+		ristrettoMock.On("Del", mock.AnythingOfType("string")).Once()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/regis", bytes.NewReader(reqBody))
+		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/register", bytes.NewReader(reqBody))
 
 		r.Header.Set("Content-Type", "application/json")
 
@@ -137,7 +138,7 @@ func TestRegis(t *testing.T) {
 			reqBody, _ := json.Marshal(req)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/regis", bytes.NewReader(reqBody))
+			r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/register", bytes.NewReader(reqBody))
 
 			r.Header.Set("Content-Type", "application/json")
 
@@ -229,9 +230,9 @@ func TestSendOTP(t *testing.T) {
 func TestVerifOTP(t *testing.T) {
 	setup(t)
 	// Define route
-	s.POST(constants.EndpointV1+"/auth/verif-otp", userHandler.VerifOTP)
+	s.POST(constants.EndpointV1+"/auth/verify-otp", userHandler.VerifyOTP)
 	t.Run("Test 1 | Success Verify OTP", func(t *testing.T) {
-		req := requests.UserVerifOTPRequest{
+		req := requests.UserVerifyOTPRequest{
 			Email: "najibfikri13@gmail.com",
 			Code:  "112233",
 		}
@@ -246,7 +247,7 @@ func TestVerifOTP(t *testing.T) {
 		userRepoMock.Mock.On("ChangeActiveUser", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(nil).Once()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verif-otp", bytes.NewReader(reqBody))
+		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verify-otp", bytes.NewReader(reqBody))
 
 		r.Header.Set("Content-Type", "application/json")
 
@@ -262,11 +263,11 @@ func TestVerifOTP(t *testing.T) {
 		assert.Contains(t, body, "otp verification success")
 	})
 	t.Run("Test 2 | Payloads is Empty", func(t *testing.T) {
-		req := requests.UserVerifOTPRequest{}
+		req := requests.UserVerifyOTPRequest{}
 		reqBody, _ := json.Marshal(req)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verif-otp", bytes.NewReader(reqBody))
+		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verify-otp", bytes.NewReader(reqBody))
 
 		r.Header.Set("Content-Type", "application/json")
 
@@ -279,7 +280,7 @@ func TestVerifOTP(t *testing.T) {
 		assert.Contains(t, w.Result().Header.Get("Content-Type"), "application/json")
 	})
 	t.Run("Test 1 | Invalid OTP Code", func(t *testing.T) {
-		req := requests.UserVerifOTPRequest{
+		req := requests.UserVerifyOTPRequest{
 			Email: "najibfikri13@gmail.com",
 			Code:  "999999",
 		}
@@ -290,7 +291,7 @@ func TestVerifOTP(t *testing.T) {
 		userRepoMock.Mock.On("GetByEmail", mock.Anything, mock.AnythingOfType("*v1.UserDomain")).Return(userDataFromDB, nil).Once()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verif-otp", bytes.NewReader(reqBody))
+		r := httptest.NewRequest(http.MethodPost, constants.EndpointV1+"/auth/verify-otp", bytes.NewReader(reqBody))
 
 		r.Header.Set("Content-Type", "application/json")
 

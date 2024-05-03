@@ -28,25 +28,27 @@ func NewUserHandler(usecase V1Domains.UserUsecase, redisCache caches.RedisCache,
 	}
 }
 
-func (userH UserHandler) Regis(ctx *gin.Context) {
-	var UserRegisRequest requests.UserRequest
-	if err := ctx.ShouldBindJSON(&UserRegisRequest); err != nil {
+func (userH UserHandler) Register(ctx *gin.Context) {
+	var UserRegisterRequest requests.UserRequest
+	if err := ctx.ShouldBindJSON(&UserRegisterRequest); err != nil {
 		NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := validators.ValidatePayloads(UserRegisRequest); err != nil {
+	if err := validators.ValidatePayloads(UserRegisterRequest); err != nil {
 		NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	userDomain := UserRegisRequest.ToV1Domain()
+	userDomain := UserRegisterRequest.ToV1Domain()
 	userDomainn, statusCode, err := userH.usecase.Store(ctx.Request.Context(), userDomain)
-	fmt.Println(userDomain, statusCode, err)
+
 	if err != nil {
 		NewErrorResponse(ctx, statusCode, err.Error())
 		return
 	}
+
+	go userH.ristrettoCache.Del("users")
 
 	NewSuccessResponse(ctx, statusCode, "registration user success", map[string]interface{}{
 		"user": responses.FromV1Domain(userDomainn),
@@ -99,8 +101,8 @@ func (userH UserHandler) SendOTP(ctx *gin.Context) {
 	NewSuccessResponse(ctx, statusCode, fmt.Sprintf("otp code has been send to %s", userOTP.Email), nil)
 }
 
-func (userH UserHandler) VerifOTP(ctx *gin.Context) {
-	var userOTP requests.UserVerifOTPRequest
+func (userH UserHandler) VerifyOTP(ctx *gin.Context) {
+	var userOTP requests.UserVerifyOTPRequest
 
 	if err := ctx.ShouldBindJSON(&userOTP); err != nil {
 		NewErrorResponse(ctx, http.StatusBadRequest, err.Error())
@@ -119,7 +121,7 @@ func (userH UserHandler) VerifOTP(ctx *gin.Context) {
 		return
 	}
 
-	statusCode, err := userH.usecase.VerifOTP(ctx.Request.Context(), userOTP.Email, userOTP.Code, otpRedis)
+	statusCode, err := userH.usecase.VerifyOTP(ctx.Request.Context(), userOTP.Email, userOTP.Code, otpRedis)
 	if err != nil {
 		NewErrorResponse(ctx, statusCode, err.Error())
 		return
@@ -137,10 +139,10 @@ func (userH UserHandler) VerifOTP(ctx *gin.Context) {
 	NewSuccessResponse(ctx, statusCode, "otp verification success", nil)
 }
 
-func (c UserHandler) GetUserData(ctx *gin.Context) {
+func (u UserHandler) GetUserData(ctx *gin.Context) {
 	// get authenticated user from context
 	userClaims := ctx.MustGet(constants.CtxAuthenticatedUserKey).(jwt.JwtCustomClaim)
-	if val := c.ristrettoCache.Get(fmt.Sprintf("user/%s", userClaims.Email)); val != nil {
+	if val := u.ristrettoCache.Get(fmt.Sprintf("user/%s", userClaims.Email)); val != nil {
 		NewSuccessResponse(ctx, http.StatusOK, "user data fetched successfully", map[string]interface{}{
 			"user": val,
 		})
@@ -148,7 +150,7 @@ func (c UserHandler) GetUserData(ctx *gin.Context) {
 	}
 
 	ctxx := ctx.Request.Context()
-	userDom, statusCode, err := c.usecase.GetByEmail(ctxx, userClaims.Email)
+	userDom, statusCode, err := u.usecase.GetByEmail(ctxx, userClaims.Email)
 	if err != nil {
 		NewErrorResponse(ctx, statusCode, err.Error())
 		return
@@ -156,10 +158,33 @@ func (c UserHandler) GetUserData(ctx *gin.Context) {
 
 	userResponse := responses.FromV1Domain(userDom)
 
-	go c.ristrettoCache.Set(fmt.Sprintf("user/%s", userClaims.Email), userResponse)
+	go u.ristrettoCache.Set(fmt.Sprintf("user/%s", userClaims.Email), userResponse)
 
 	NewSuccessResponse(ctx, statusCode, "user data fetched successfully", map[string]interface{}{
 		"user": userResponse,
+	})
+}
+
+func (u UserHandler) GetAllUsers(ctx *gin.Context) {
+	if val := u.ristrettoCache.Get("users"); val != nil {
+		NewSuccessResponse(ctx, http.StatusOK, "users data fetched successfully", map[string]interface{}{
+			"users": val,
+		})
+		return
+	}
+
+	usersDom, statusCode, err := u.usecase.GetAllUsers(ctx.Request.Context())
+	if err != nil {
+		NewErrorResponse(ctx, statusCode, err.Error())
+		return
+	}
+
+	usersResponse := responses.ToResponseList(usersDom)
+
+	go u.ristrettoCache.Set("users", usersResponse)
+
+	NewSuccessResponse(ctx, statusCode, "users data fetched successfully", map[string]interface{}{
+		"users": usersResponse,
 	})
 
 }
