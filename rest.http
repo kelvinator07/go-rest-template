@@ -1,0 +1,40 @@
+### GET A ROOT ENDPOINT
+GET http://localhost:8080/api/
+
+### REGISTRATION FOR NEW USER
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "Geeky Kelvin",
+  "email": "geekykelvin@gmail.com",
+  "password":"123123sdf!"
+}
+
+### SEND OTP 
+POST http://localhost:8080/api/v1/auth/send-otp
+Content-Type: application/json
+
+{
+  "email": "geekykelvin@gmail.com"
+}
+
+
+### VERIFY OTP 
+POST http://localhost:8080/api/v1/auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "geekykelvin@gmail.com",
+  "code":"102429"
+}
+
+
+### LOGIN 
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "geekykelvin@gmail.com",
+  "password":"123123sdf!"
+}

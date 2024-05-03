@@ -45,3 +45,7 @@ API Server
 Github Workflow
 Add .env secrets to Repository
 
+Generate mocks
+Example: 
+make mock interface=UserRepository dir=internal/business/domains/v1 filename=mock.repository_users
+

@@ -1,8 +1,6 @@
 include internal/config/.env
 
-MOCKERY_BIN := $(GOPATH)/bin/mockery
-
-.PHONY: serve tidy test mock mig-up mig-down seed test-all postgres postgres-stop createdb dropdb start
+.PHONY: serve tidy test mock mig-up mig-down seed test-all postgres postgres-stop createdb dropdb redis redis-stop db-setup
 
 serve:
 	go run cmd/api/main.go
@@ -15,7 +13,7 @@ test:
 
 mock:
 	@echo "Generating mocks for interface $(interface) in directory $(dir)..."
-	@$(MOCKERY_BIN) --name=$(interface) --dir=$(dir) --output=./internal/mocks
+	mockery --name=$(interface) --dir=$(dir) --output=./internal/mocks
 	cd ./internal/mocks && \
 	mv $(interface).go $(filename).go
 
@@ -47,3 +45,12 @@ createdb:
 
 dropdb:
 	docker exec -it postgres14 dropdb ${POSTGRES_DATABASE}
+
+redis:
+	docker run --name redis -p ${REDIS_PORT}:${REDIS_PORT} -d redis:7-alpine --requirepass ${REDIS_PASS}
+
+redis-stop:
+	docker stop redis && docker rm redis
+
+db-setup: 
+	sh -c "make postgres; sleep 3; make createdb; sleep 3; make mig-up; sleep 3; make seed; sleep 3; make redis"
